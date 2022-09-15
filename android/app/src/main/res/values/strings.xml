@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Brandy</string>
+    <string name="facebook_app_id">545363336667655</string>
+    <string name="fb_login_protocol_scheme">fb545363336667655</string>
+</resources>

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "370063141453",
+    "project_id": "brandy-1185e",
+    "storage_bucket": "brandy-1185e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:370063141453:android:f7917761fb8766cbabca04",
+        "android_client_info": {
+          "package_name": "com.perfect1st.brandy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "370063141453-0q51pkdeg2l403uq7bu3dam735vf34dg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJjSJYLswuPvOfgO9YKWKZwzao80MtSqA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "370063141453-0q51pkdeg2l403uq7bu3dam735vf34dg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
