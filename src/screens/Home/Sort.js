@@ -70,7 +70,7 @@ const Sort = ({navigation}) => {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollView}>
-          <View style={styles.fullRow}>
+          {/* <View style={styles.fullRow}>
             <TouchableOpacity
               style={styles.radioCirle}
               onPress={() => {
@@ -84,7 +84,7 @@ const Sort = ({navigation}) => {
               style={styles.label2}>
               {t('Defualt')}
             </Text>
-          </View>
+          </View> */}
           <View style={styles.fullRow}>
             <TouchableOpacity
               style={styles.radioCirle}
@@ -100,7 +100,7 @@ const Sort = ({navigation}) => {
               {t('The most recent')}
             </Text>
           </View>
-          <View style={styles.fullRow}>
+          {/* <View style={styles.fullRow}>
             <TouchableOpacity
               style={styles.radioCirle}
               onPress={() => {
@@ -129,7 +129,7 @@ const Sort = ({navigation}) => {
               style={styles.label2}>
               {t('Least watched')}
             </Text>
-          </View>
+          </View> */}
           <View style={styles.fullRow}>
             <TouchableOpacity
               style={styles.radioCirle}

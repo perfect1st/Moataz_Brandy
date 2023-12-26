@@ -22,6 +22,7 @@ export const register = async (
   countryID,
   cityID,
   password,
+  countryCode,
   callBack,
 ) => {
   let fcmToken = await AsyncStorage.getItem('fcmToken');
@@ -33,12 +34,24 @@ export const register = async (
       email: email.toLowerCase(),
       password,
       type: 2,
-      logo: null,
       countryID,
       cityID,
+      countryCode,
       userKey: fcmToken,
     })
     .then(response => {
+      console.log( {
+        fullnameAR: name,
+        fullnameEN: name,
+        mobile,
+        email: email.toLowerCase(),
+        password,
+        type: 2,
+        countryID,
+        cityID,
+        code:countryCode,
+        userKey: fcmToken,
+      })
       return callBack({ data: response.data });
     })
     .catch(e => {
@@ -92,13 +105,21 @@ export const googleSignIn = async (name, email, imageURL, userID, callBack) => {
     });
 };
 
-export const login = async (mobile, password, callBack) => {
+export const login = async (mobile, password,country, callBack) => {
+  console.log({
+    val: mobile,
+    password,
+    code:country,
+    type: 2,
+    userKey: fcmToken,
+})
   let fcmToken = await AsyncStorage.getItem('fcmToken');
   axios
     .get(API + 'login', {
       params: {
         val: mobile,
         password,
+        code:country,
         type: 2,
         userKey: fcmToken,
       },
@@ -136,9 +157,16 @@ export const getAdv = callBack => {
     });
 };
 
-export const getCategories = callBack => {
+export const getCategories = async (userId , callBack) => {
+    let fcmToken = await AsyncStorage.getItem('fcmToken');
+
   axios
-    .get(API + 'getAllCategories', {})
+    .get(API + 'getAllCategories', {
+      params:{
+        token:fcmToken,
+        userId 
+      }
+    })
     .then(response => {
       return callBack({ data: response.data });
     })
@@ -230,6 +258,7 @@ export const addAdvertise = (
   title,
   adsStatus,
   mobile,
+  countryCode,
   whatsapp,
   price,
   desc,
@@ -249,6 +278,7 @@ export const addAdvertise = (
       titleEN: title,
       adsStatus,
       mobile,
+      countryCode,
       wtsappMobile: whatsapp,
       price,
       descAR: desc,
@@ -270,7 +300,7 @@ export const addAdvertiseedit = (
   cityID,
   title,
   adsStatus,
-  mobile,
+  countryCode,
   whatsapp,
   price,
   desc,
@@ -287,13 +317,16 @@ export const addAdvertiseedit = (
       titleAR: title,
       titleEN: title,
       adsStatus,
-      mobile,
+      // mobile,
       wtsappMobile: whatsapp,
       price,
       descAR: desc,
       descEN: desc,
+      countryCode:countryCode
     })
     .then(response => {
+
+      console.log("FFFFFFFFFFFFFFFFFFFF")
       return callBack({ data: response.data });
     })
     .catch(e => {
@@ -412,6 +445,19 @@ export const checkFav = (userID, offersID, callBack) => {
       return callBack({ error: e });
     });
 };
+
+export const deleteAccountFunc = (id, callBack) => {
+  axios
+    .post(API + 'deleteAccount/' + id)
+    .then(response => {
+      return callBack({ data: response.data });
+    })
+    .catch(e => {
+      console.log(e);
+      return callBack({ error: e });
+    });
+};
+
 
 export const addRemoveFav = (userID, offersID, callBack) => {
   axios

@@ -16,6 +16,7 @@ import {
   KeyboardAvoidingView,
   Linking,
   Modal,
+  // Share
 } from 'react-native';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 const {width, height} = Dimensions.get('window');
@@ -31,7 +32,7 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {Button, Overlay} from 'react-native-elements';
 import {useSelector, useDispatch} from 'react-redux';
-import {setFavourites} from '../../redux/actions';
+import {logOut, setFavourites} from '../../redux/actions';
 import {
   getProductReviews,
   getSimilarProducts,
@@ -51,6 +52,7 @@ import ImageView from 'react-native-image-viewing';
 import {SliderBox} from 'react-native-image-slider-box';
 import ModalAlert from '../../components/ModalAlert/ModalAlert';
 import ModalAlert2 from '../../components/ModalAlert/ModalAlert2';
+import axios from 'axios';
 const ProductDetails = ({navigation, route}) => {
   const [loginv, setloginv] = useState(false);
   const [errorv, seterrorv] = useState(false);
@@ -69,6 +71,8 @@ const ProductDetails = ({navigation, route}) => {
   const [offer, setOffer] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [newItem, setNewItem] = useState({});
+  const [userDeteled, setuserDeteled] = useState(false);
+
   // console.log("photo", category, "***photos-category***")
   // console.log('product.wtsappMobile', product.titleAR, 'product.wtsappMobile');
   const [Processing, setProcessing] = useState(false);
@@ -96,14 +100,18 @@ const ProductDetails = ({navigation, route}) => {
   useEffect(() => {
     console.log('_________________________________________________________________________________________')
     console.log(route.params.product)
+        console.log(route.params.edit)
+        console.log('route.params.myAds',route.params.myAds)
+
     offersUser(product._id, async response => {
       setOffer(response.data);
     });
   }, []);
 
   console.log('www=----', product.wtsappMobile);
-  const whatsapplink = 'whatsapp://send?text=&phone=' + product.wtsappMobile;
-
+  const whatsapplink = 'whatsapp://send?text=&phone=+' + product?.countryCode?.code + product.wtsappMobile;
+  console.log(whatsapplink)
+  console.log(product?.countryCode)
   // const OpenURLButtonwhats = () => {
   //   const handlePress = useCallback(async () => {
   //     const supported = await Linking.canOpenURL(whatsapplink);
@@ -195,26 +203,52 @@ const ProductDetails = ({navigation, route}) => {
 
   useEffect(() => {
     // console.log(product.img[0]);
-    const fs = RNFetchBlob.fs;
-    let imagePath = null;
-    RNFetchBlob.config({
-      fileCache: true,
-    })
-      .fetch('GET', product.img[0])
-      // the image is now dowloaded to device's storage
-      .then(resp => {
-        // the image path you can use it directly with Image component
-        imagePath = resp.path();
-        return resp.readFile('base64');
+    if(product.img[0]){
+      const fs = RNFetchBlob.fs;
+      let imagePath = null;
+      RNFetchBlob.config({
+        fileCache: true,
       })
-      .then(base64Data => {
-        // here's base64 encoded image
-        // console.log(base64Data,"hihihi");
-        // remove the file from storage
-        setimg64('data:image/png;base64,' + base64Data);
-        // console.log(img64);
-        return fs.unlink(imagePath);
-      });
+        .fetch('GET', product.img[0])
+        // the image is now dowloaded to device's storage
+        .then(resp => {
+          console.log(product.img[0])
+          // the image path you can use it directly with Image component
+          imagePath = resp.path();
+          return resp.readFile('base64');
+        })
+        .then(base64Data => {
+          // here's base64 encoded image
+          // console.log(base64Data,"hihihi");
+          // remove the file from storage
+          setimg64('data:image/png;base64,' + base64Data);
+          // console.log(img64);
+          return fs.unlink(imagePath);
+        });
+  
+    }else{
+      const fs = RNFetchBlob.fs;
+      let imagePath = null;
+      RNFetchBlob.config({
+        fileCache: true,
+      })
+        .fetch('GET', 'https://brandysa.com/BrandyAdmin/image/logoApp2.png')
+        // the image is now dowloaded to device's storage
+        .then(resp => {
+          // the image path you can use it directly with Image component
+          imagePath = resp.path();
+          return resp.readFile('base64');
+        })
+        .then(base64Data => {
+          // here's base64 encoded image
+          // console.log(base64Data,"hihihi");
+          // remove the file from storage
+          setimg64(`data:image/image/${product.img[0].split('.').pop()};base64,` + base64Data);
+          // console.log(img64);
+          return fs.unlink(imagePath);
+        });
+  
+    }
   }, []);
 
   const removeOffers = id => {
@@ -260,6 +294,16 @@ const ProductDetails = ({navigation, route}) => {
 
   const commentData = offers => {
     if (User) {
+      axios
+      .get('http://brandysa.com/api/user/employeeByID', {
+        params: {
+          id: User._id,
+        },
+      })
+      .then(response => {
+        console.log(response.data)
+        if(response.data.status == 1){
+  
       if (!comment) {
         setcommentv(!commentv);
       } else {
@@ -276,6 +320,20 @@ const ProductDetails = ({navigation, route}) => {
           // setReviews(false);
         });
       }
+    }else{
+      setuserDeteled(!userDeteled);
+      dispatch(logOut());
+      setTimeout(()=>{
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Home'}],
+        });
+        
+        navigation.navigate('Login');
+    },1500)
+
+    }
+  })
     } else {
       setloginv(!loginv);
       // NAVIGATE HERE
@@ -302,7 +360,7 @@ const ProductDetails = ({navigation, route}) => {
 
   const sharee = async () => {
     try {
-      const result = await Share.share({
+      const result = await Share.open({
         message:
           'Brandy Application \n' + product.titleAR + ' ' + product.descAR,
 
@@ -323,23 +381,27 @@ const ProductDetails = ({navigation, route}) => {
   };
 
   const share = async () => {
-    console.log('share', img64, 'share');
+    console.log('___________________', product.img[0], '___________________');
+    console.log('extention',product.img[0].split('.').pop())
+    // console.log('share', img64, 'share');
     const shareOptions = {
       message:
         'Brandy Application \n' +
-        product.titleAR +
-        ' ' +
-        product.descAR +
-        '\n' +
-        'https://brandysa.com/?id=' +
-        product._id,
-      url: img64,
-
+        product.titleAR  + 
+        '\n'
+        +
+       'https://brandysa.com/offer?id=' + product._id,
+      // url: img64,
+      // type: `image/${product.img[0].split('.').pop()}`,
+      // failOnCancel: false
       // url:
       // urls: [files.image1, files.image2]
     };
 
+
+
     try {
+      console.log(shareOptions)
       const ShareResponse = await Share.open(shareOptions);
       console.log(JSON.stringify(ShareResponse));
     } catch (error) {
@@ -365,7 +427,7 @@ const ProductDetails = ({navigation, route}) => {
 
         <View style={styles.headerTopRow}>
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            onPress={() =>route.params.myAds?navigation.navigate('MyAdvs', {id: User._id,}): navigation.goBack()}
             style={styles.iconBtn}>
             <AntDesign
               name="arrowright"
@@ -463,8 +525,8 @@ const ProductDetails = ({navigation, route}) => {
               <View></View>
             )}
 
-            {(User && product.userID._id != User._id && product.mobile != '') ||
-            (!User && product.mobile != '') ? (
+            {(User && product.userID._id != User._id && product.wtsappMobile != '') ||
+            (!User && product.wtsappMobile != '') ? (
               <View style={styles.iconBtn}>
                 <ModalAlert2
                   Title=""
@@ -480,7 +542,7 @@ const ProductDetails = ({navigation, route}) => {
                   YesText={t('Yes')}
                   CancleText={t('No')}
                 />
-                {product.mobile && (
+                {product.wtsappMobile && (
                   <TouchableOpacity
                     style={{flexDirection: 'row', borderColor: 'green'}}
                     onPress={() => {
@@ -556,7 +618,7 @@ const ProductDetails = ({navigation, route}) => {
                 <TouchableOpacity
                   style={{flexDirection: 'row', borderColor: 'green'}}
                   onPress={() => {
-                    navigation.navigate('editproduct', {
+                    navigation.navigate('Editproduct', {
                       category: product.categoryID,
                       product: product,
                     });
@@ -733,16 +795,16 @@ const ProductDetails = ({navigation, route}) => {
               navigation.navigate('customershowadv', {
                 name:
                   i18n.language == 'ar'
-                    ? item.userID.fullnameAR
-                    : item.userID.fullnameEN,
-                productuserid: item.userID._id,
-                productuser: item.userID,
+                    ? item?.userID?.fullnameAR
+                    : item?.userID?.fullnameEN,
+                productuserid: item?.userID?._id,
+                productuser: item?.userID,
               });
             }}>
             <Text style={styles.addusername}>
               {i18n.language == 'ar'
-                ? item.userID.fullnameAR
-                : item.userID.fullnameEN}
+                ? item?.userID?.fullnameAR
+                : item?.userID?.fullnameEN}
             </Text>
            
           </TouchableOpacity>
@@ -934,7 +996,8 @@ const ProductDetails = ({navigation, route}) => {
 
   const dialCall = number => {
     let phoneNumber = '';
-    Linking.openURL(`tel:${product.mobile.toString()}`);
+    console.log('__________',product?.countryCode?.code,product.wtsappMobile)
+    Linking.openURL(`tel:${product?.countryCode?.code}${product.wtsappMobile.toString()}`);
   };
 
   return (
@@ -1031,6 +1094,15 @@ const ProductDetails = ({navigation, route}) => {
                   Mvasible={errorv}
                   CancleText={t('Cancel')}
                 />
+                 <ModalAlert
+            Title={''}
+            TextBody={t('This user is blocked or deleted')}
+            onPress={() => {
+              setuserDeteled(!userDeteled);
+            }}
+            Mvasible={userDeteled}
+            CancleText={t('Cancel')}
+          />
                 <ModalAlert2
                   Title=""
                   TextBody={t('Login first')}

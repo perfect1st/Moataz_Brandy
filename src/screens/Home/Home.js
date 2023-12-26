@@ -57,9 +57,10 @@ const Home = ({navigation}) => {
 
   useEffect(() => {
     setProcessing(true);
-    getCategories(response => {
+    getCategories(User?._id, response => {
       setProcessing(false);
       if (response.data) {
+        console.log(data)
         setOldData(response.data);
         setData(response.data);
       } else {

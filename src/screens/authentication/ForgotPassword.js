@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   ScrollView,
   Platform,
@@ -22,12 +22,27 @@ import {useTranslation} from 'react-i18next';
 const {width, height} = Dimensions.get('window');
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import {getCountriesAndCities} from './../../services/APIs';
+import SelectDropdown from 'react-native-select-dropdown';
 
 const ForgetPassword = ({navigation}) => {
   const [Mobile, setMobile] = useState(null);
   const [Processing, setProcessing] = useState(false);
   const dispatch = useDispatch();
   const {t, i18n} = useTranslation();
+  const [hidePass2, setHidePass2] = useState(true);
+  const countriesDropdownRef = useRef();
+  const [countries, setCountries] = useState([]);
+  const [countryCode, setCountryCode] = useState("60c9c6a111c77e7c7506c6f4");
+
+
+  useEffect(() => {
+    getCountriesAndCities(response => {
+      setCountries(response.data);
+    });
+    return () => {};
+  }, []);
 
   // const emailIsValid = (email) => {
   //     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -101,15 +116,15 @@ const ForgetPassword = ({navigation}) => {
             style={styles.logo}
           />
           <Text allowFontScaling={false} style={styles.loginTxt}>
-            {t('Forgot password ?')}
+            {t('Enter mobile')}
           </Text>
           <Text allowFontScaling={false} style={styles.dontHaveAccTxt}>
             {t('Change password')}
           </Text>
-          <Text allowFontScaling={false} style={styles.dontHaveAccTxt}>
+          {/* <Text allowFontScaling={false} style={styles.dontHaveAccTxt}>
             {t('Enter mobile')}
-          </Text>
-          <View style={[styles.shadow, styles.mobileTxtInput]}>
+          </Text> */}
+          {/* <View style={[styles.shadow, styles.mobileTxtInput]}>
             <MaterialCommunityIcons
               name={'cellphone-android'}
               size={22}
@@ -122,12 +137,59 @@ const ForgetPassword = ({navigation}) => {
               }}
               value={Mobile}
               keyboardType={'numeric'}
-              placeholder={'+966 12-345-6789'}
+              placeholder={'05XXXXXXXX'}
+              textAlign={styles.textInputAlign.textAlign}
+              editable={!Processing}
+              secureTextEntry={hidePass2 ? true : false}
+              returnKeyType={'done'}
+            />
+                        <Icon
+              name={hidePass2 ? 'eye-slash' : 'eye'}
+              size={15}
+              color="grey"
+              onPress={() => setHidePass2(!hidePass2)}
+            />
+
+          </View> */}
+                    <View style={[styles.shadow, styles.textInputAll]}>
+            <MaterialCommunityIcons
+              name={'cellphone-android'}
+              size={22}
+              color={'#B2B2B2'}
+            />
+                   <SelectDropdown
+              ref={countriesDropdownRef}
+              data={countries}
+              defaultButtonText={countryCode == '60c9c6a111c77e7c7506c6f4' ? '966' :t('Country code')}
+              buttonTextAfterSelection={(item, index) => {
+                return i18n.language == 'ar' ? item.code : item.code;
+              }}
+              onSelect={(selectedItem, index) => {
+                setCountryCode(selectedItem._id);
+              }}
+              // buttonStyle={styles.textInput2}
+              buttonStyle={[styles.textInput2,{borderRightWidth:1,borderColor:'#bbb',height:'90%'}]}
+              buttonTextStyle={styles.label3}
+              rowTextStyle={styles.label3}
+              rowTextForSelection={(item, index) => {
+                return i18n.language == 'ar' ? item.code : item.code;
+              }}
+            />
+            <TextInput
+              style={[styles.textInput,{flex:2}]}
+              onChangeText={text => {
+                setMobile(text);
+              }}
+              // value={mobile}
+              keyboardType={'numeric'}
+              placeholderTextColor="gray"
+              placeholder={t('Mobile')}
               textAlign={styles.textInputAlign.textAlign}
               editable={!Processing}
               returnKeyType={'done'}
             />
           </View>
+
           <TouchableOpacity
             onPress={() => {
               if (!Processing) {
@@ -217,6 +279,8 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 12,
     marginHorizontal: 8,
+    fontFamily: 'Cairo-Bold',
+
   },
   textInputAlign: {textAlign: I18nManager.isRTL ? 'right' : 'left'},
   loginBtn: {
@@ -228,6 +292,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignSelf: 'center',
   },
+  textInputAll: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 46,
+    width: '80%',
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    alignSelf: 'center',
+    marginBottom: 14,
+    fontFamily: 'Cairo-Bold',
+  },
+  textInput2: {
+    flex: 1,
+    borderRadius: 12,
+    fontFamily: 'Cairo-Regular',
+    backgroundColor:'#fff',
+  },
+
   loginBtnTxt: {
     alignSelf: 'center',
     fontSize: 16,

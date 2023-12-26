@@ -16,25 +16,27 @@ import {
     Modal,
     KeyboardAvoidingView,
     TouchableOpacity,
+    Pressable,
 } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SaveUser } from '../../redux/actions';
+import { SaveUser,logOut } from '../../redux/actions';
 import axios from 'axios';
 axios.defaults.timeout = 10000;
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import Entypo from 'react-native-vector-icons/Entypo';
-
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import SelectDropdown from 'react-native-select-dropdown';
-import { getCity, getCountriesAndCities, updateUser,uploadPhoto } from './../../services/APIs';
+import { getCity, getCountriesAndCities, updateUser,uploadPhoto ,deleteAccountFunc} from './../../services/APIs';
 import CheckBox from '@react-native-community/checkbox';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
+import ModalAlert2 from '../../components/ModalAlert/ModalAlert2';
+import ModalAlert3 from '../../components/ModalAlert/ModalAlert3';
 
 const Register = ({ navigation }) => {
     const { t, i18n } = useTranslation();
@@ -48,10 +50,10 @@ const Register = ({ navigation }) => {
     const [email, setEmail] = useState(User.email);
     const [mobile, setMobile] = useState(User.mobile);
     const [countryID, setCountryID] = useState(
-        User.countryID ? User.countryID._id : null,
+        User?.countryID ? User.countryID._id : null,
     )
     const [cityID, setCityID] = useState(
-        User.cityID ? User.cityID._id : null,
+        User?.cityID ? User.cityID._id : null,
     )
     const [password, setPassword] = useState(User.password);
     const [nameV, setnameV] = useState(false);
@@ -67,13 +69,19 @@ const Register = ({ navigation }) => {
     const [emailV, setemailV] = useState(false);
     const [emailusedV, setemailusedV] = useState(false);
     const [mobileusedV, setemobileusedV] = useState(false);
+    const [checkPassM, setcheckPassM] = useState(false);
     
     const [editSuccessV, seteditSuccessV] = useState(false);
+
+    const [deleteAccount, setdeleteAccount] = useState(false);
+    const [oldPass, setOldPass] = useState(false);
+    const [oldPassConfirm, setOldPassConfirm] = useState(false);
 
     const [countries, setCountries] = useState([]);
     const countriesDropdownRef = useRef();
     const [cities, setCities] = useState([]);
     const citiesDropdownRef = useRef();
+    const [inputText,setInputText] = useState('')
 
     useEffect(() => {
         getCountriesAndCities(response => {
@@ -340,6 +348,7 @@ const Register = ({ navigation }) => {
             }
         });
 
+
         // register(
         //     name,
         //     email,
@@ -370,6 +379,34 @@ const Register = ({ navigation }) => {
         //     },
         // );
     };
+    const deleteAccountHandler = ()=> {
+        if(inputText == ''){
+            setOldPass(!oldPass);
+            setcheckPassM(!setcheckPassM);
+        }else if(inputText != password){
+            setInputText('')
+            setOldPassConfirm(!oldPassConfirm);
+            setcheckPassM(!setcheckPassM);
+        }else{
+            deleteAccountFunc(User._id, async response2 => {
+                if (response2.data) {
+                    console.log(response2);
+                    setcheckPassM(!setcheckPassM);
+                    seteditSuccessV(true)
+                    setTimeout(()=>{
+                        seteditSuccessV(false)
+                        dispatch(logOut());
+                        navigation.navigate('Login');
+                    },1500)
+                }
+            });
+        }
+    }
+
+    const addInputHandler =(password)=>{
+        setInputText(password)
+        console.log(inputText)
+    }
 
     const renderHeader = () => {
         return (
@@ -414,6 +451,12 @@ const Register = ({ navigation }) => {
                     {/* <Text allowFontScaling={false} style={styles.addYourDataTxt}>
             {t('Add your data and start shopping.')}
           </Text> */}
+                    <View style={styles.perssableView} >
+                        <Pressable style={styles.perssableBtn} onPress={()=>setdeleteAccount(true)}>
+                            <Text style={{fontFamily: 'Cairo-Regular',fontSize:16,color:'red'}}>احذف الحساب</Text>
+                        </Pressable>
+                    </View>
+
                     <TouchableOpacity
                         style={styles.btnStyle}
                         onPress={() => {
@@ -468,7 +511,7 @@ const Register = ({ navigation }) => {
                         </View>
                         <Image
                                 source={
-                                    User
+                                    User && User.logo
                                         ? { uri: userLogo }
                                         : require('./../../assets/images/usr.png')
                                 }
@@ -621,6 +664,25 @@ const Register = ({ navigation }) => {
 
                     <ModalAlert
                         Title={t('Remind')}
+                        TextBody={t('Please add password')}
+                        onPress={() => {
+                            setOldPass(!oldPass);
+                        }}
+                        Mvasible={oldPass}
+                        CancleText={t('Cancel')}
+                    />
+                    <ModalAlert
+                        Title={t('Remind')}
+                        TextBody={t('Password and confirm password does not match')}
+                        onPress={() => {
+                            setOldPassConfirm(!oldPassConfirm);
+                        }}
+                        Mvasible={oldPassConfirm}
+                        CancleText={t('Cancel')}
+                    />
+
+                    <ModalAlert
+                        Title={t('Remind')}
                         TextBody={t('Please add fullname')}
                         onPress={() => {
                             setnameV(!nameV);
@@ -692,6 +754,31 @@ const Register = ({ navigation }) => {
                         CancleText={t('Cancel')}
                     />
 
+                    <ModalAlert2
+                        Title={t('Remind')}
+                        TextBody={t('Are you sure to delete your account')}
+                        onPress={() => {
+                            setdeleteAccount(!deleteAccount);
+                        }}
+                        onPress1={() => {
+                            setdeleteAccount(!deleteAccount);
+                            setcheckPassM(true)
+                        }}
+                        Mvasible={deleteAccount}
+                        YesText={t('Yes')}
+                        CancleText={t('No')}
+                        />
+                        <ModalAlert3
+                            TextBody={t('please enter your password')}
+                            onPress={() => {
+                                setcheckPassM(!checkPassM);
+                            }}
+                            onPress1={deleteAccountHandler}
+                            onAddInput={addInputHandler}
+                            Mvasible={checkPassM}
+                            YesText={t('Yes')}
+                            CancleText={t('Cancel')}
+                    />
                     <ModalAlert
                         TextBody={t('Edited successfully')}
 
@@ -700,7 +787,7 @@ const Register = ({ navigation }) => {
                         }}
                         Mvasible={editSuccessV}
 
-                        CancleText={t('Cancel')}
+                        CancleText={t('Done')}
                     />
 
                     <View>
@@ -887,5 +974,12 @@ const styles = StyleSheet.create({
         fontFamily: 'Cairo-Regular',
 
       },
-    
+    perssableBtn:{
+        padding:10,
+    },
+    perssableView:{
+        marginTop:5,
+        marginHorizontal:5,
+        flexDirection:'row',
+        justifyContent:'flex-end'}
 });

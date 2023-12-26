@@ -29,6 +29,7 @@
   "Code has been sent": "Code has been sent to your mail to activate account",
   "Please confirm code": "Please confirm code that 's sent on",
   "Done": "Done",
+  "Country code": "Code",
   "Enter value here mo":"Please enter amount to pay commation",
   "Not sent": "Not sent",
   "Resend": "Resend",
@@ -82,7 +83,7 @@
   "Used": "Used",
   "Mobile (optional)": "Mobile (optional)",
   "Mobile": "Mobile",
-  "whatsapp (optional)": "whatsapp (optional) whitout 0",
+  "whatsapp (optional)": "Enter mobile number (optional)",
   "Price (optional)": "Price (optional)",
   "Write here": "Write here",
   "Write comment": "Write comment",
@@ -153,6 +154,14 @@
   "Agree to the terms and conditions": "Agree to ",
   "Mobile is already used": "Mobile is already used",
   "Alert conditions": "Agree to the terms and conditions",
-  "msgs sent success": "message sent successfully"
+  "msgs sent success": "message sent successfully",
+  "Are you sure to delete your account":"Are you sure to delete your account",
+  "please enter your password":"please enter your password",
+  "Please select country code":"Please select country code",
+  "Please select right mobile length":"Please select right mobile length",
+  "Please select at least one image":"Please select at least one image",
+  "This user is blocked or deleted":"Your account has been deleted by the administration for not complying with the terms and conditions",
+"Uploading an image is being now":"Uploading an image is being now"
+
 
 }

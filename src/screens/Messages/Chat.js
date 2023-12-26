@@ -31,8 +31,13 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 import {getChatMsgs, sendMsg, uploadPhoto} from './../../services/APIs';
 import {launchImageLibrary} from 'react-native-image-picker';
+import { logOut } from '../../redux/actions';
+import axios from 'axios';
 
 const AddAdvData = ({navigation, route}) => {
+  const dispatch = useDispatch();
+  const [userDeteled, setuserDeteled] = useState(false);
+
   const {t, i18n} = useTranslation();
   const User = useSelector(state => state.AuthReducer.User);
   const pickImageFromPhone = () => {
@@ -166,6 +171,15 @@ const AddAdvData = ({navigation, route}) => {
   }, []);
 
   const sendTxtMsg = () => {
+    axios
+    .get('http://brandysa.com/api/user/employeeByID', {
+      params: {
+        id: User._id,
+      },
+    })
+    .then(response => {
+      console.log(response.data)
+      if(response.data.status == 1){
     console.log('sending')
     const msgTemp = msg;
     if (msg) {
@@ -180,6 +194,20 @@ const AddAdvData = ({navigation, route}) => {
         }
       });
     }
+  }else{
+    setuserDeteled(!userDeteled);
+    dispatch(logOut());
+    setTimeout(()=>{
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Home'}],
+      });
+      
+      navigation.navigate('Login');
+  },1500)
+
+  }
+})
   };
 
   const renderHeader = () => {
@@ -479,6 +507,15 @@ const AddAdvData = ({navigation, route}) => {
             </View>
           </TouchableWithoutFeedback>
         </View>
+        <ModalAlert
+            Title={''}
+            TextBody={t('This user is blocked or deleted')}
+            onPress={() => {
+              setuserDeteled(!userDeteled);
+            }}
+            Mvasible={userDeteled}
+            CancleText={t('Cancel')}
+          />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

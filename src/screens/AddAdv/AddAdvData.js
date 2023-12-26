@@ -40,6 +40,8 @@ import {
   addAdvertise,
 } from './../../services/APIs';
 import {launchCamera} from 'react-native-image-picker';
+import { logOut } from '../../redux/actions';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 const AddAdvData = ({navigation}) => {
   const {t, i18n} = useTranslation();
   const User = useSelector(state => state.AuthReducer.User);
@@ -60,7 +62,9 @@ const AddAdvData = ({navigation}) => {
   const [brands, setBrands] = useState([]);
   const brandsDropdownRef = useRef();
   const [categories, setCategories] = useState([]);
-  
+  const [mobileCount, setmobileCount] = useState(false);
+  const dispatch = useDispatch();
+
   const [countryID, setCountryID] = useState(null);
   const [cityID, setCityID] = useState(null);
   const [countries, setCountries] = useState([]);
@@ -69,11 +73,20 @@ const AddAdvData = ({navigation}) => {
   const citiesDropdownRef = useRef();
 
   const [categoryV, setcategoryV] = useState(false);
+
+  const [userDeteled, setuserDeteled] = useState(false);
+
+  const [countryCodeV, setcountryCodeV] = useState(false);
+  const [countryCode, setcountryCode] = useState("60c9c6a111c77e7c7506c6f4");
   const [brandv, setbrandv] = useState(false);
+
+  const [imageV, setimageV] = useState(false);
   const [countryv, setcountryv] = useState(false);
   const [cityv, setcityv] = useState(false);
   const [statev, setstatev] = useState(false);
   const [titlev, settitlev] = useState(false);
+  const [uploadImage, setuploadImage] = useState(false);
+
   const [descv, setdescv] = useState(false);
   const [whatsappv, setwhatsappv] = useState(false);
   const [advv, setadvv] = useState(false);
@@ -81,7 +94,7 @@ const AddAdvData = ({navigation}) => {
 
   
   useEffect(() => {
-    getCategories(response => {
+    getCategories(User?._id,response => {
       if (response.data) {
         setCategories(response.data);
       }
@@ -89,7 +102,7 @@ const AddAdvData = ({navigation}) => {
     getCountriesAndCities(response => {
       setCountries(response.data);
     });
-    return () => {};
+    return () => {};ß
   }, []);
 
   useEffect(() => {
@@ -103,8 +116,9 @@ const AddAdvData = ({navigation}) => {
         compressImageQuality: 0.5,
       }).then(images => {
         setProcessing2(true);
-        Platform.OS == 'android'
-          && ToastAndroid.show('يتم الان رفع الصور', ToastAndroid.SHORT)
+
+        setuploadImage(!uploadImage);
+
         for (let index = 0; index < images.length; index++) {
           const element = images[index];
           if (Platform.OS === 'android') {
@@ -174,9 +188,9 @@ const AddAdvData = ({navigation}) => {
           fileName: response.fileName,
           type: response.type,
         };
-        Platform.OS == 'android'
-          ? ToastAndroid.show('يتم الان رفع الصور', ToastAndroid.SHORT)
-          : Alert.alert('يتم الان رفع الصور');
+
+        setuploadImage(!uploadImage);
+          
         setProcessing2(true);
         uploadPhoto(source, response => {
           if (response.data) {
@@ -193,11 +207,12 @@ const AddAdvData = ({navigation}) => {
   const processNumber = mobile => {
     var string = fixNumbers(mobile);
     var stringWithoutSpaces = string.replace(/\s/g, '');
-    if (stringWithoutSpaces.charAt(0) == '0') {
-      return stringWithoutSpaces.substring(1);
-    } else {
-      return stringWithoutSpaces;
-    }
+    // if (stringWithoutSpaces.charAt(0) == '0') {
+    //   return stringWithoutSpaces.substring(1);
+    // } else {
+    //   return stringWithoutSpaces;
+    // }
+    return stringWithoutSpaces;
   };
 
   const fixNumbers = str => {
@@ -232,67 +247,111 @@ const AddAdvData = ({navigation}) => {
     }
     return str;
   };
-
+  const handleDeleteImage = (imageIndex) => {
+    console.log(imageIndex)
+    console.log(image)
+    const newImages = image.filter((el)=> el != imageIndex);
+    setImage(newImages);
+  };
   const validate = () => {
-    if (!categoryId) {
-      setcategoryV(!categoryV);
-    } else if (!brandId) {
-      setbrandv(!brandv);
-    } else if (!cityID) {
-      setcityv(!cityv);
-    } else if (!adsStatus) {
-      setstatev(!statev);
-    } else if (!title) {
-      settitlev(!titlev);
-    } else if (whatsapp.length > 0 && whatsapp.length < 9) {
-      setwhatsappv(!whatsappv);
-    } else if (!desc) {
-      setdescv(!descv);
-    } else {
-      setProcessing(true);
-      addAdvertise(
-        image.length == 0
-          ? ['https://brandysa.com/BrandyAdmin/image/logoApp2.jpg']
-          : image,
-        categoryId,
-        User._id,
-        brandId,
-        countryID ? countryID : '60c9c6a111c77e7c7506c6f4',
-        cityID,
-        title,
-        adsStatus,
-        processNumber(mobile),
-        whatsapp.length > 0 ? '966' + whatsapp.toString() : '',
-        fixNumbers(price),
-        desc,
-        response => {
-          console.log(response.data.categoryID);
-          setProcessing(false);
-          if (response.data) {
-            setadvv(!advv);
-
-            setTimeout(() => {
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [
-                    {
-                      name: 'ProductDetails',
-                      params: {
-                        product: response.data,
-                        category: response.data.categoryID,
-                      },
-                    },
-                  ],
-                }),
-              );
-            }, 700);
-          } else {
-            seterrorv(!errorv);
+    // console.log(image.length)
+    axios
+    .get('http://brandysa.com/api/user/employeeByID', {
+      params: {
+        id: User?._id,
+      },
+    })
+    .then(response => {
+      console.log(response.data)
+      if(response.data.status == 1){
+        if(image.length == 0){
+          setimageV(!imageV);
+        }else if (!categoryId) {
+          setcategoryV(!categoryV);
+        } else if (!brandId) {
+          setbrandv(!brandv);
+        } else if (!cityID) {
+          setcityv(!cityv);
+        } else if (!adsStatus) {
+          setstatev(!statev);
+        } else if (!title) {
+          settitlev(!titlev);
+        } else if (!countryCode) {
+          setcountryCodeV(!countryCodeV);
+        }  else if (!desc) {
+          setdescv(!descv);
+        } else {
+          if(whatsapp){
+    
+            const countryObj = countries.find((el)=> el._id == countryCode)
+            if(countryObj.mobileCount != whatsapp.length){
+              setmobileCount(!mobileCount);
+              return
+            }
           }
-        },
-      );
-    }
+    
+          setProcessing(true);
+          addAdvertise(
+            image.length == 0
+              ? ['https://brandysa.com/BrandyAdmin/image/logoApp2.jpg']
+              : image,
+            categoryId,
+            User._id,
+            brandId,
+            countryID ? countryID : '60c9c6a111c77e7c7506c6f4',
+            cityID,
+            title,
+            adsStatus,
+            processNumber(mobile),
+            countryCode,
+            // whatsapp.length > 0 ? '966' + whatsapp.toString() : '',
+            fixNumbers(whatsapp),
+            fixNumbers(price),
+            desc,
+            response => {
+              console.log(response.data.categoryID);
+              setProcessing(false);
+              if (response.data) {
+                setadvv(!advv);
+    
+                setTimeout(() => {
+                  navigation.dispatch(
+                    CommonActions.reset({
+                      index: 0,
+                      routes: [
+                        {
+                          name: 'ProductDetails',
+                          params: {
+                            product: response.data,
+                            category: response.data.categoryID,
+                          },
+                        },
+                      ],
+                    }),
+                  );
+                }, 700);
+              } else {
+                seterrorv(!errorv);
+              }
+            },
+          );
+        }
+    
+      }else{
+        setuserDeteled(!userDeteled);
+        dispatch(logOut());
+        setTimeout(()=>{
+          navigation.reset({
+            index: 0,
+            routes: [{name: 'Home'}],
+          });
+          
+          navigation.navigate('Login');
+      },1500)
+
+      }
+    })
+    return
   };
   const renderHeader = () => {
     return (
@@ -353,7 +412,15 @@ const AddAdvData = ({navigation}) => {
               !Processing2 &&
               image.map((item, index) => {
                 return (
-                  <View key={index} style={styles.addPhotoBtnBordered}>
+                  <View style={{alignItems:'flex-start'}}>
+                  
+                  <TouchableOpacity key={index}
+                  onPress={() => handleDeleteImage(item)}
+                  >
+                  <FontAwesome5 name="trash-alt" size={18} color={'#202F3A'} />
+
+                  </TouchableOpacity>
+
                     <Image
                       style={styles.addPhotoBtnImgBordered}
                       source={{
@@ -361,6 +428,7 @@ const AddAdvData = ({navigation}) => {
                       }}
                     />
                   </View>
+
                 );
               })}
             {image.length > 0 &&
@@ -521,6 +589,15 @@ const AddAdvData = ({navigation}) => {
             Mvasible={categoryV}
             CancleText={t('Cancel')}
           />
+             <ModalAlert
+            Title={''}
+            TextBody={t('This user is blocked or deleted')}
+            onPress={() => {
+              setuserDeteled(!userDeteled);
+            }}
+            Mvasible={userDeteled}
+            CancleText={t('Cancel')}
+          />
           <ModalAlert
             Title={''}
             TextBody={t('Please choose brand')}
@@ -548,6 +625,24 @@ const AddAdvData = ({navigation}) => {
             Mvasible={statev}
             CancleText={t('Cancel')}
           />
+            <ModalAlert
+            Title={t('Remind')}
+            TextBody={t('Please select right mobile length')}
+            onPress={() => {
+              setmobileCount(!mobileCount);
+            }}
+            Mvasible={mobileCount}
+            CancleText={t('Cancel')}
+          />
+            <ModalAlert
+            // Title={t('Remind')}
+            TextBody={t('Uploading an image is being now')}
+            onPress={() => {
+              setuploadImage(!uploadImage);
+            }}
+            Mvasible={uploadImage}
+            CancleText={t('Done')}
+          />
           <ModalAlert
             Title={''}
             TextBody={t('Whatsapp should be 9 numbers')}
@@ -555,6 +650,24 @@ const AddAdvData = ({navigation}) => {
               setwhatsappv(!whatsappv);
             }}
             Mvasible={whatsappv}
+            CancleText={t('Cancel')}
+          />
+                    <ModalAlert
+            Title={''}
+            TextBody={t('Please select country code')}
+            onPress={() => {
+              setcountryCodeV(!countryCodeV);
+            }}
+            Mvasible={countryCodeV}
+            CancleText={t('Cancel')}
+          />
+        <ModalAlert
+            Title={''}
+            TextBody={t('Please select at least one image')}
+            onPress={() => {
+              setimageV(!imageV);
+            }}
+            Mvasible={imageV}
             CancleText={t('Cancel')}
           />
           <ModalAlert
@@ -786,7 +899,7 @@ const AddAdvData = ({navigation}) => {
           {/* <Text allowFontScaling={false} numberOfLines={1} style={styles.label}>
             {t('Mobile (optional)')}
           </Text> */}
-          <View
+          {/* <View
             style={[
               styles.borderedField,
               {
@@ -816,7 +929,7 @@ const AddAdvData = ({navigation}) => {
               editable={!Processing}
               returnKeyType={'done'}
             />
-          </View>
+          </View> */}
           {/* <Text allowFontScaling={false} numberOfLines={1} style={styles.label}>
             {t('whatsapp (optional)')}
           </Text> */}
@@ -836,8 +949,25 @@ const AddAdvData = ({navigation}) => {
                 borderColor: '#ccc',
               },
             ]}>
+                       <SelectDropdown
+              ref={countriesDropdownRef}
+              data={countries}
+              defaultButtonText={countryCode == '60c9c6a111c77e7c7506c6f4' ? '966' :t('Country code')}
+              buttonTextAfterSelection={(item, index) => {
+                return i18n.language == 'ar' ? item.code : item.code;
+              }}
+              onSelect={(selectedItem, index) => {
+                setcountryCode(selectedItem._id);
+              }}
+              buttonStyle={[styles.textInput2,{borderRightWidth:1,borderColor:'#bbb'}]}
+              buttonTextStyle={styles.label3}
+              rowTextStyle={styles.label3}
+              rowTextForSelection={(item, index) => {
+                return i18n.language == 'ar' ? item.code : item.code;
+              }}
+            />
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput,{flex:3}]}
               onChangeText={text => {
                 setWhatsapp(text);
               }}
@@ -1132,7 +1262,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     paddingHorizontal: 8,
     fontFamily: 'Cairo-Bold',
-    color: '#202F3A',
+    color: 'gray',
     flex: 1,
   },
   loginBtn: {
@@ -1168,5 +1298,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Cairo-Regular',
     fontSize: 14,
     color: '#333',
+  }
+  ,
+  textInput2: {
+    flex: 1,
+    borderRadius: 12,
+    fontFamily: 'Cairo-Regular',
+    backgroundColor:'#fff',
   },
+
 });

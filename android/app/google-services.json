@@ -1,34 +1,41 @@
 {
   "project_info": {
-    "project_number": "370063141453",
-    "project_id": "brandy-1185e",
-    "storage_bucket": "brandy-1185e.appspot.com"
+    "project_number": "1077927506775",
+    "project_id": "brandy-70058",
+    "storage_bucket": "brandy-70058.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:370063141453:android:f7917761fb8766cbabca04",
+        "mobilesdk_app_id": "1:1077927506775:android:bd058e2dc35c4a0a454412",
         "android_client_info": {
-          "package_name": "com.perfect1st.brandy"
+          "package_name": "com.perfect1st.brandysa"
         }
       },
       "oauth_client": [
         {
-          "client_id": "370063141453-0q51pkdeg2l403uq7bu3dam735vf34dg.apps.googleusercontent.com",
+          "client_id": "1077927506775-udp4n3t030vhml19skslu01loe038ud3.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAJjSJYLswuPvOfgO9YKWKZwzao80MtSqA"
+          "current_key": "AIzaSyBwPw3VRMpgSgiPTrktxzra80AdWFWXq6Y"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "370063141453-0q51pkdeg2l403uq7bu3dam735vf34dg.apps.googleusercontent.com",
+              "client_id": "1077927506775-udp4n3t030vhml19skslu01loe038ud3.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "1077927506775-i0qu0uu4b84gag45pecoi4osdpg99168.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.perfect1st.Brandy"
+              }
             }
           ]
         }

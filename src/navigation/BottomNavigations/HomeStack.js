@@ -10,10 +10,11 @@ import Test from './../../screens/Home/Test';
 import Chat from './../../screens/Messages/Chat';
 import ComplaintsAndSuggestions from './../../screens/drawerScreens/ComplaintsAndSuggestions';
 import customershowadv from '../../screens/Home/customershowadv';
-import editproduct from '../../screens/Home/editproduct';
+import Editproduct from '../../screens/Home/Editproduct';
 import SearchScreen from '../../screens/Home/SearchScreen';
 import Favourite from '../../screens/Favourite/Favourite';
 import MyAdvs from '../../screens/drawerScreens/MyAdvs';
+
 import TermsAndConditions from '../../screens/drawerScreens/TermsAndConditions';
 import Messages from './../../screens/Messages';
 
@@ -143,7 +144,16 @@ export default Routes = () => {
           },
         }}
       />
-      
+          <Stack.Screen
+        name="Editproduct"
+        component={Editproduct}
+        options={{
+          header: () => { },
+          headerStyle: {
+            height: 0,
+          },
+        }}
+      />
       {/* <Stack.Screen
         name="Test"
         component={Test}

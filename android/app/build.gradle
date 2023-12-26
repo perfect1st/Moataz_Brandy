@@ -124,6 +124,10 @@ android {
     ndkVersion rootProject.ext.ndkVersion
 
     compileSdkVersion rootProject.ext.compileSdkVersion
+   packagingOptions {
+        pickFirst '**/libc++_shared.so'
+        pickFirst '**/libfbjni.so'
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -131,11 +135,13 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.perfect1st.brandy"
+        applicationId "com.perfect1st.brandysa"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8
-        versionName "8.0"
+        versionCode 28
+        versionName "28.0"
+        multiDexEnabled true
+
     }
     splits {
         abi {
@@ -196,7 +202,9 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
-
+implementation("com.squareup.okhttp3:okhttp:4.9.1")
+implementation("com.squareup.okhttp3:okhttp-urlconnection:4.9.1")
+implementation 'androidx.work:work-runtime-ktx:2.7.0' 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {

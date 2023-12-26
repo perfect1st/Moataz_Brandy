@@ -15,7 +15,7 @@ import AboutUs from './../screens/drawerScreens/AboutUs';
 import ComplaintsAndSuggestions from './../screens/drawerScreens/ComplaintsAndSuggestions';
 import Payment from './../screens/drawerScreens/CommisionPayment/Payment';
 import Response from './../screens/drawerScreens/CommisionPayment/Response';
-import editproduct from '../screens/Home/editproduct';
+import Editproduct from '../screens/Home/Editproduct';
 import customershowadv from '../screens/Home/customershowadv';
 import ProductDetails from '../screens/Home/ProductDetails';
 import Chat from '../screens/Messages/Chat';
@@ -68,8 +68,8 @@ export default Routes = () => {
         }}
       />
       <Stack.Screen
-        name="editproduct"
-        component={editproduct}
+        name="Editproduct"
+        component={Editproduct}
         options={{
           header: () => { },
           headerStyle: {

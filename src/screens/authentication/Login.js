@@ -29,7 +29,8 @@ import {useTranslation} from 'react-i18next';
 const {width, height} = Dimensions.get('window');
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import {login, facebookSignIn, googleSignIn} from './../../services/APIs';
+import {login, facebookSignIn, googleSignIn, getCountriesAndCities} from './../../services/APIs';
+import SelectDropdown from 'react-native-select-dropdown';
 
 import {
   AccessToken,
@@ -52,7 +53,13 @@ const Login = ({navigation}) => {
   const [mobileVisible, setMobileVisible] = useState(false);
   const [passwordVisible, setpasswordVisible] = useState(false);
   const [password1Visible, setpassword1Visible] = useState(false);
+  const [countryIDVisible, setcountryIDVisible] = useState(false);
+  const [mobileCount, setmobileCount] = useState(false);
+
   const [emailValidate, setemailValidate] = useState(false);
+  const countriesDropdownRef = useRef();
+  const [countries, setCountries] = useState([]);
+  const [countryID, setCountryID] = useState("60c9c6a111c77e7c7506c6f4");
 
   const User = useSelector(state => state.AuthReducer.User);
   const dispatch = useDispatch();
@@ -60,6 +67,8 @@ const Login = ({navigation}) => {
   const [showAlert, setshowAlert] = useState(false);
 
   useEffect(() => {
+    console.log(countryID)
+    console.log('______________________',User)
     if (User) {
       navigation.dispatch(
         CommonActions.reset({
@@ -69,6 +78,14 @@ const Login = ({navigation}) => {
       );
     }
   }, [User]);
+
+  
+  useEffect(() => {
+    getCountriesAndCities(response => {
+      setCountries(response.data);
+    });
+    return () => {};
+  }, []);
 
   const _inputRef = useRef(null);
   const setRef = useCallback((node) => {
@@ -88,13 +105,26 @@ const Login = ({navigation}) => {
 
 
   const validate = () => {
+    
     if (!mobile) {
       setMobileVisible(!mobileVisible);
     } else if (!password) {
       setpasswordVisible(!passwordVisible);
     } else if (password.length < 6) {
       setpassword1Visible(!password1Visible);
-    } else {
+    }
+    else if (!countryID) {
+      setcountryIDVisible(!countryIDVisible);
+
+    }
+    else {
+
+    const countryObj = countries.find((el)=> el._id == countryID)
+      if(countryObj.mobileCount != mobile.length){
+        setmobileCount(!mobileCount);
+        return
+      }
+
       loginUser();
     }
   };
@@ -102,11 +132,15 @@ const Login = ({navigation}) => {
   const processNumber = mobile => {
     var string = fixNumbers(mobile);
     var stringWithoutSpaces = string.replace(/\s/g, '');
-    if (stringWithoutSpaces.charAt(0) == '0') {
-      return stringWithoutSpaces.substring(1);
-    } else {
-      return stringWithoutSpaces;
-    }
+
+    // if (stringWithoutSpaces.charAt(0) == '0') {
+    //   return stringWithoutSpaces.substring(1);
+    // } else {
+    //   return stringWithoutSpaces;
+    // }
+
+    return stringWithoutSpaces;
+
   };
 
   const fixNumbers = str => {
@@ -144,7 +178,7 @@ const Login = ({navigation}) => {
 
   const loginUser = () => {
     setProcessing(true);
-    login(processNumber(mobile), password, async response => {
+    login(processNumber(mobile), password, countryID,async response => {
       setProcessing(false);
       if (response.data) {
         const usr = response.data;
@@ -269,8 +303,26 @@ const Login = ({navigation}) => {
               size={22}
               color={'#B2B2B2'}
             />
+            <SelectDropdown
+              ref={countriesDropdownRef}
+              data={countries}
+              defaultButtonText={countryID == '60c9c6a111c77e7c7506c6f4' ? '966':t('Country code')}
+              
+              buttonTextAfterSelection={(item, index) => {
+                return i18n.language == 'ar' ? item.code : item.code;
+              }}
+              onSelect={(selectedItem, index) => {
+                setCountryID(selectedItem._id);
+              }}
+              buttonStyle={[styles.textInput2,{borderRightWidth:1,borderColor:'#bbb'}]}
+              buttonTextStyle={styles.label3}
+              rowTextStyle={styles.label3}
+              rowTextForSelection={(item, index) => {
+                return i18n.language == 'ar' ? item.code : item.code;
+              }}
+            />
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput,{flex:2}]}
               onChangeText={text => {
                 setMobile(text);
               }}
@@ -282,7 +334,9 @@ const Login = ({navigation}) => {
               placeholderTextColor="gray"
               returnKeyType={'done'}
             />
+
           </View>
+          
           <Modal
             // animationType='slide'
             transparent={true}
@@ -360,6 +414,85 @@ const Login = ({navigation}) => {
             </View>
             
           </Modal>
+          <Modal
+            // animationType='slide'
+            transparent={true}
+            visible={countryIDVisible}>
+            <View style={styles.centeredViewPhoto}>
+              <View style={styles.modalViewM}>
+              <Text
+                  style={{
+                    alignSelf: 'center',
+                    marginTop: 5,
+                    fontSize: 20,
+                    color: 'black',
+                    fontFamily: 'Cairo-Bold'
+                  }}>
+                  {t('error')}
+                </Text>
+                <Text style={{textAlign:'center' ,fontFamily: 'Cairo-Regular', fontSize:18}}>
+                  { '\n' +t('Please select country code') + '\n \n'}
+                </Text>
+                <View style={{alignItems : 'center'}}>
+                
+                <Pressable 
+                style={[
+                      styles.subviewoverlay,
+                      {
+                        backgroundColor: '#F8B704',
+                      },
+                    ]}
+                onPress={() => setcountryIDVisible(!countryIDVisible)}>
+                  <Text   style={
+                        ([styles.subviewoverlaytext],
+                        {color: 'white', alignSelf: 'center' , fontFamily: 'Cairo-Regular', fontSize: 16})
+                      }>{t('Cancel')}</Text>
+                </Pressable></View>
+
+              </View>
+            </View>
+            
+          </Modal>
+          <Modal
+            // animationType='slide'
+            transparent={true}
+            visible={mobileCount}>
+            <View style={styles.centeredViewPhoto}>
+              <View style={styles.modalViewM}>
+              <Text
+                  style={{
+                    alignSelf: 'center',
+                    marginTop: 5,
+                    fontSize: 20,
+                    color: 'black',
+                    fontFamily: 'Cairo-Bold'
+                  }}>
+                  {t('error')}
+                </Text>
+                <Text style={{textAlign:'center' ,fontFamily: 'Cairo-Regular', fontSize:18}}>
+                  { '\n' +t('Please select right mobile length') + '\n \n'}
+                </Text>
+                <View style={{alignItems : 'center'}}>
+                
+                <Pressable 
+                style={[
+                      styles.subviewoverlay,
+                      {
+                        backgroundColor: '#F8B704',
+                      },
+                    ]}
+                onPress={() => setmobileCount(!mobileCount)}>
+                  <Text   style={
+                        ([styles.subviewoverlaytext],
+                        {color: 'white', alignSelf: 'center' , fontFamily: 'Cairo-Regular', fontSize: 16})
+                      }>{t('Cancel')}</Text>
+                </Pressable></View>
+
+              </View>
+            </View>
+            
+          </Modal>
+
           <Modal
             // animationType='slide'
             transparent={true}
@@ -613,6 +746,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Cairo-Regular',
 
   },
+  textInput2: {
+    flex: 1,
+    borderRadius: 12,
+    fontFamily: 'Cairo-Regular',
+    backgroundColor:'#fff',
+  },
+
   mobileTxtInput: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -734,4 +874,12 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     alignItems: 'center',
   },
+  label3: {
+    textAlign: 'left',
+    fontSize: 16,
+    paddingHorizontal: 8,
+    fontFamily: 'Cairo-Regular',
+    color: 'gray',
+  },
+
 });

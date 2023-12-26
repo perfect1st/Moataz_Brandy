@@ -39,15 +39,18 @@ import {
   getBrandsByCategory,
   uploadPhoto,
   addAdvertiseedit,
-} from './../../services/APIs'
+} from '../../services/APIs'
+import { logOut } from '../../redux/actions'
+import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5'
 
-const editproduct = ({navigation, route}) => {
+const Editproduct = ({navigation, route}) => {
   const {t, i18n} = useTranslation()
   const User = useSelector(state => state.AuthReducer.User)
   const product = route.params.product
   console.log('here', product, 'here')
   const [Processing, setProcessing] = useState(false)
   const [Processing2, setProcessing2] = useState(false)
+  const dispatch = useDispatch();
 
   //product.cityID
   const [image, setImage] = useState([])
@@ -67,6 +70,9 @@ const editproduct = ({navigation, route}) => {
   const [title, setTitle] = useState(product.titleAR)
   const [mobile, setMobile] = useState(product.mobile)
   const [whatsapp, setWhatsapp] = useState(product.wtsappMobile)
+  const [countryCode, setcountryCode] = useState(product.countryCode)
+  const [userDeteled, setuserDeteled] = useState(false);
+
   const [price, setPrice] = useState(product.price)
   const [desc, setDesc] = useState(product.descAR)
 
@@ -140,7 +146,7 @@ const editproduct = ({navigation, route}) => {
                 console.log(response.data)
                 arr.push(response.data)
                 setImage([...arr])
-                setImage22([...product.img,...arr])
+                setImage22([...image22,...arr])
               }
             })
           } else {
@@ -158,7 +164,7 @@ const editproduct = ({navigation, route}) => {
                 console.log(response.data)
                 arr.push(response.data)
                 setImage([...arr])
-                setImage22([...product.img,...arr])
+                setImage22([...image22,...arr])
 
               }
             })
@@ -204,7 +210,7 @@ const editproduct = ({navigation, route}) => {
             var arr = [...image]
             arr.push(response.data)
             setImage(arr)
-            setImage22([...product.img,...arr])
+            setImage22([...image22,...arr])
 
             setProcessing2(false)
           }
@@ -214,6 +220,17 @@ const editproduct = ({navigation, route}) => {
   }
 
   const validate = () => {
+    axios
+    .get('http://brandysa.com/api/user/employeeByID', {
+      params: {
+        id: User._id,
+      },
+    })
+    .then(response => {
+      console.log(response.data)
+      if(response.data.status == 1){
+
+
     if (!categoryId) {
        setcategoryV(!categoryV);
     } else if (!brandId) {
@@ -225,13 +242,14 @@ const editproduct = ({navigation, route}) => {
     } else if (!title) {
        settitlev(!titlev);
     }
-    else if (whatsapp.length > 0 && whatsapp.length < 9) {
-      setwhatsappv(!whatsappv);
-    }
+    // else if (whatsapp.length > 0 && whatsapp.length < 9) {
+    //   setwhatsappv(!whatsappv);
+    // }
      else if (!desc) {
        setdescv(!descv);
     } else {
       setProcessing(true)
+      console.log(image22)
       addAdvertiseedit(
         product._id,
         image22,
@@ -242,8 +260,8 @@ const editproduct = ({navigation, route}) => {
         cityID,
         title,
         adsStatus,
-        mobile,
-        whatsapp.length > 0 ? '966' + whatsapp.toString() : '',
+        countryCode,
+        whatsapp.toString(),
         price,
         desc,
         response => {
@@ -255,7 +273,7 @@ const editproduct = ({navigation, route}) => {
             // navigation.navigate('ProductDetails', {
             //   id: User._id,
             // })
-            navigation.navigate('ProductDetails', {categoryId, product: response.data})
+            navigation.navigate('ProductDetails', {categoryId, product: response.data , myAds:route.params.myAds})
 
             setadvv(!advv)
           } else {
@@ -264,6 +282,20 @@ const editproduct = ({navigation, route}) => {
         },
       )
     }
+  }else{
+    setuserDeteled(!userDeteled);
+      dispatch(logOut());
+      setTimeout(()=>{
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Home'}],
+        });
+        
+        navigation.navigate('Login');
+    },1500)
+
+  }
+})
   }
 
   const renderHeader = () => {
@@ -292,6 +324,28 @@ const editproduct = ({navigation, route}) => {
     )
   }
 
+  const handleDeleteImage = (imageIndex) => {
+    console.log(imageIndex)
+    Alert.alert(
+      'تأكيد الحذف',
+      'هل أنت متأكد أنك تريد حذف هذه الصورة ?',
+      [
+        {
+          text: 'ألغاء',
+          style: 'cancel',
+        },
+        {
+          text: 'حذف',
+          style: 'destructive',
+          onPress: () => {
+            const newImages = image22.filter((el)=> el != imageIndex);
+            setImage22(newImages);
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <StatusBar backgroundColor={'#202F3A'} barStyle={'light-content'} />
@@ -305,17 +359,25 @@ const editproduct = ({navigation, route}) => {
           contentContainerStyle={styles.scrollView}>
           <View style={styles.borderedField}>
             <View style={styles.borderedField}>
-              {image.length == 0 && !Processing2 && (
-                <View style={styles.addPhotoBtnBordered}>
+              {!Processing2 && (
+                image22.map((el)=>
+                <View style={{alignItems:'flex-start'}}>
+
+                <TouchableOpacity
+                onPress={() => handleDeleteImage(el)}
+                >
+                  <FontAwesome5Icon name="trash-alt" size={18} color={'#202F3A'} />
+                  </TouchableOpacity>
                   <Image
                     style={styles.addPhotoBtnImgBordered}
                     source={{
-                      uri: image22[0],
+                      uri: el,
                     }}
                   />
-                </View>
+                  </View>
+                )
               )}
-              {image.length == 0 && Processing2 && (
+              {Processing2 && (
                 <View
                   style={{
                     margin: 12,
@@ -323,7 +385,7 @@ const editproduct = ({navigation, route}) => {
                   <ActivityIndicator size='small' color='#000' />
                 </View>
               )}
-              {image.length > 0 &&
+              {/* {image.length > 0 &&
                 !Processing2 &&
                 image.map((item, index) => {
                   return (
@@ -336,8 +398,8 @@ const editproduct = ({navigation, route}) => {
                       />
                     </View>
                   )
-                })}
-              {image.length > 0 &&
+                })} */}
+              {/* {image.length > 0 &&
                 Processing2 &&
                 image.map((item, index) => {
                   return (
@@ -345,7 +407,7 @@ const editproduct = ({navigation, route}) => {
                       <ActivityIndicator size='small' color='#000' />
                     </View>
                   )
-                })}
+                })} */}
             </View>
           </View>
 
@@ -614,7 +676,7 @@ const editproduct = ({navigation, route}) => {
             Mvasible={titlev}
             CancleText={t('Cancel')}
           />
-          <ModalAlert
+          {/* <ModalAlert
             Title={''}
             TextBody={t('Whatsapp should be 9 numbers')}
             onPress={() => {
@@ -622,7 +684,7 @@ const editproduct = ({navigation, route}) => {
             }}
             Mvasible={whatsappv}
             CancleText={t('Cancel')}
-          />
+          /> */}
           <ModalAlert
             Title={''}
             TextBody={t('Add advertise description')}
@@ -650,6 +712,15 @@ const editproduct = ({navigation, route}) => {
             Mvasible={errorv}
             CancleText={t('Cancel')}
           />
+                  <ModalAlert
+            Title={''}
+            TextBody={t('This user is blocked or deleted')}
+            onPress={() => {
+              setuserDeteled(!userDeteled);
+            }}
+            Mvasible={userDeteled}
+            CancleText={t('Cancel')}
+          />
           <ModalAlert
             Title={''}
             TextBody={t('Please choose country')}
@@ -675,7 +746,7 @@ const editproduct = ({navigation, route}) => {
               </View>
             </View>
           </View>
-          <View style={styles.borderedField}>
+          {/* <View style={styles.borderedField}>
             <TextInput
               style={styles.textInput}
               onChangeText={text => {
@@ -690,17 +761,34 @@ const editproduct = ({navigation, route}) => {
               placeholderTextColor="gray"
 
             />
-          </View>
+          </View> */}
           <View style={styles.borderedField}>
+          <SelectDropdown
+              ref={countriesDropdownRef}
+              data={countries}
+              defaultButtonText={product?.countryCode?.code}
+              buttonTextAfterSelection={(item, index) => {
+                return i18n.language == 'ar' ? item.code : item.code;
+              }}
+              onSelect={(selectedItem, index) => {
+                setcountryCode(selectedItem._id);
+              }}
+              buttonStyle={[styles.textInput2,{borderRightWidth:1,borderColor:'#bbb'}]}
+              buttonTextStyle={styles.label3}
+              rowTextStyle={styles.label3}
+              rowTextForSelection={(item, index) => {
+                return i18n.language == 'ar' ? item.code : item.code;
+              }}
+            />
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput,{flex:3}]}
               onChangeText={text => {
                 setWhatsapp(text)
               }}
-              value={whatsapp.length > 9 ? whatsapp.slice(3) : whatsapp}
+              value={whatsapp}
               keyboardType={'numeric'}
-              maxLength={9}
-              placeholder={t('whatsapp (optional)')}
+              // maxLength={9}
+              placeholder={t('Mobile (optional)')}
               textAlign={styles.textInputAlign.textAlign}
               editable={!Processing}
               returnKeyType={'done'}
@@ -761,7 +849,7 @@ const editproduct = ({navigation, route}) => {
   )
 }
 
-export default editproduct
+export default Editproduct
 
 const styles = StyleSheet.create({
   shadow: {
@@ -951,4 +1039,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontFamily: 'Cairo-Bold',
   },
+  textInput2: {
+    flex: 1,
+    borderRadius: 12,
+    fontFamily: 'Cairo-Regular',
+    backgroundColor:'#fff',
+  },
+
 })

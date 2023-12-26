@@ -27,6 +27,8 @@ import {complaintsAndSuggestions} from './../../services/APIs';
 import {useDispatch, useSelector} from 'react-redux';
 import Textarea from 'react-native-textarea';
 import ModalAlert from '../../components/ModalAlert/ModalAlert';
+import axios from 'axios';
+import { logOut } from '../../redux/actions';
 const AddAdvData = ({navigation, route}) => {
   const {t, i18n} = useTranslation();
 
@@ -37,11 +39,22 @@ const AddAdvData = ({navigation, route}) => {
   const [msg, setMsg] = useState(null);
    const [errorv, seterrorv] = useState(false);
    const [successv, setsuccessv] = useState(false);
-
+   const [userDeteled, setuserDeteled] = useState(false);
+   const dispatch = useDispatch();
+ 
   const complaints = () => {
     if (!msg) {
       seterrorv(!errorv);
     } else {
+      axios
+      .get('http://brandysa.com/api/user/employeeByID', {
+        params: {
+          id: User._id,
+        },
+      })
+      .then(response => {
+        console.log(response.data)
+        if(response.data.status == 1){
       setProcessing(true);
       var type = 3;
       var newMsg = productOrder ? 'رقم الاعلان : ' + productOrder.toString() + '\n' + msg : msg;
@@ -51,6 +64,19 @@ const AddAdvData = ({navigation, route}) => {
         setMsg('')
         productOrder ? navigation.goBack() : navigation.navigate('HomeStack');
       });
+    }else{
+      setuserDeteled(!userDeteled);
+      dispatch(logOut());
+      setTimeout(()=>{
+        navigation.reset({
+          index: 0,
+          routes: [{name: 'Home'}],
+        });
+        
+        navigation.navigate('Login');
+    },1500)
+    }
+  })
     }
   };
 
@@ -132,6 +158,16 @@ const AddAdvData = ({navigation, route}) => {
             Mvasible={successv}
             CancleText={t('Done')}
           />
+                         <ModalAlert
+            Title={''}
+            TextBody={t('This user is blocked or deleted')}
+            onPress={() => {
+              setuserDeteled(!userDeteled);
+            }}
+            Mvasible={userDeteled}
+            CancleText={t('Cancel')}
+          />
+
           <TouchableOpacity
             onPress={() => {
               if (!Processing) {

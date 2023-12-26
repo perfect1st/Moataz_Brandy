@@ -619,7 +619,7 @@ const CategoryProducts = ({navigation, route}) => {
           />
           <ModalAlert
             Title={''}
-            TextBody={t('Please Add Message')}
+            TextBody={t('error')}
             onPress={() => {
               seterrorv(!errorv);
             }}

@@ -444,9 +444,10 @@ const AddAdvData = ({navigation, route}) => {
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() => {
-                          navigation.navigate('editproduct', {
+                          navigation.navigate('Editproduct', {
                             category: item.categoryID,
                             product: item,
+                            myAds:true
                           })
                         }}>
                         <Text

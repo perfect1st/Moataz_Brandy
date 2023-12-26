@@ -29,6 +29,7 @@ import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import SelectDropdown from 'react-native-select-dropdown';
 import {getCountriesAndCities, register} from './../../services/APIs';
 import CheckBox from '@react-native-community/checkbox';
+import BouncyCheckbox from "react-native-bouncy-checkbox";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
 const Register = ({navigation}) => {
@@ -44,6 +45,8 @@ const Register = ({navigation}) => {
   const [email, setEmail] = useState(null);
   const [mobile, setMobile] = useState(null);
   const [countryID, setCountryID] = useState(null);
+  const [countryCode, setCountryCode] = useState("60c9c6a111c77e7c7506c6f4");
+
   const [cityID, setCityID] = useState(null);
   const [password, setPassword] = useState(null);
   const [cPassword, setCPassword] = useState(null);
@@ -59,10 +62,12 @@ const Register = ({navigation}) => {
   const [emailV, setemailV] = useState(false);
   const [emailusedV, setemailusedV] = useState(false);
   const [mobileusedV, setemobileusedV] = useState(false);
+  const [countryCodeV, setCountryCodeV] = useState(false);
   const [countries, setCountries] = useState([]);
   const countriesDropdownRef = useRef();
   const [cities, setCities] = useState([]);
   const citiesDropdownRef = useRef();
+  const [mobileCount, setmobileCount] = useState(false);
 
   useEffect(() => {
     getCountriesAndCities(response => {
@@ -107,6 +112,8 @@ const Register = ({navigation}) => {
       setToggleV(!ToggleV);
     } else if (!mobile) {
       setmobileV(!mobileV);
+    }else if (!countryCode) {
+      setCountryCodeV(!countryCodeV);
     } else if (!countryID) {
       setcountryV(!countryV);
     } else if (!cityID) {
@@ -116,6 +123,14 @@ const Register = ({navigation}) => {
     } else if (!cPassword || cPassword != password) {
       setpasswordVV(!passwordVV);
     } else {
+
+      const countryObj = countries.find((el)=> el._id == countryCode)
+      if(countryObj.mobileCount != mobile.length){
+        setmobileCount(!mobileCount);
+        return
+      }
+
+
       registerUser();
     }
   };
@@ -176,6 +191,7 @@ const Register = ({navigation}) => {
       countryID,
       cityID,
       password,
+      countryCode,
       async response => {
         setProcessing(false);
         if (response.data) {
@@ -276,8 +292,26 @@ const Register = ({navigation}) => {
               size={22}
               color={'#B2B2B2'}
             />
+                   <SelectDropdown
+              ref={countriesDropdownRef}
+              data={countries}
+              defaultButtonText={countryCode == '60c9c6a111c77e7c7506c6f4' ? '966' :t('Country code')}
+              buttonTextAfterSelection={(item, index) => {
+                return i18n.language == 'ar' ? item.code : item.code;
+              }}
+              onSelect={(selectedItem, index) => {
+                setCountryCode(selectedItem._id);
+              }}
+              // buttonStyle={styles.textInput2}
+              buttonStyle={[styles.textInput2,{borderRightWidth:1,borderColor:'#bbb',height:'90%'}]}
+              buttonTextStyle={styles.label3}
+              rowTextStyle={styles.label3}
+              rowTextForSelection={(item, index) => {
+                return i18n.language == 'ar' ? item.code : item.code;
+              }}
+            />
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput,{flex:2}]}
               onChangeText={text => {
                 setMobile(text);
               }}
@@ -307,6 +341,7 @@ const Register = ({navigation}) => {
                 setCities(selectedItem.city);
               }}
               buttonStyle={styles.textInput}
+
               buttonTextStyle={styles.label2}
               rowTextStyle={styles.label2}
               rowTextForSelection={(item, index) => {
@@ -400,8 +435,10 @@ const Register = ({navigation}) => {
               marginTop: 5,
               marginRight: I18nManager.isRTL ? 110 : 75,
             }}>
-            <CheckBox
-              lineWidth={2}
+              <View style={{  height: 22, width: 22, borderRadius: 5 ,marginTop:7}}>  
+              {/* <CheckBox
+            style={{ width: 20, height: 20 }}
+              // lineWidth={1}
               disabled={false}
               value={toggleCheckBox}
               boxType={'square'}
@@ -411,7 +448,19 @@ const Register = ({navigation}) => {
               onAnimationType={'fill'}
               offAnimationType={'fill'}
               onValueChange={newValue => setToggleCheckBox(newValue)}
+            /> */}
+              <BouncyCheckbox
+              size={25}
+              fillColor="#F8B704"
+              unfillColor="#FFFFFF"
+              // text="Custom Checkbox"
+              iconStyle={{ borderColor: "#FFF" }}
+              innerIconStyle={{ borderWidth: 2 }}
+              onPress={(isChecked) => setToggleCheckBox(isChecked)}
             />
+
+            </View>
+          
             <Text
               allowFontScaling={false}
               style={{
@@ -492,6 +541,16 @@ const Register = ({navigation}) => {
             Mvasible={countryV}
             CancleText={t('Cancel')}
           />
+                    <ModalAlert
+            Title={t('Remind')}
+            TextBody={t('Please select right mobile length')}
+            onPress={() => {
+              setmobileCount(!mobileCount);
+            }}
+            Mvasible={mobileCount}
+            CancleText={t('Cancel')}
+          />
+
           <ModalAlert
             Title={t('Remind')}
             TextBody={t('Please choose city')}
@@ -535,6 +594,16 @@ const Register = ({navigation}) => {
               setemobileusedV(!mobileusedV);
             }}
             Mvasible={mobileusedV}
+            CancleText={t('Cancel')}
+          />
+
+<ModalAlert
+            Title={t('Remind')}
+            TextBody={t('Please select country code')}
+            onPress={() => {
+              setCountryCodeV(!countryCodeV);
+            }}
+            Mvasible={countryCodeV}
             CancleText={t('Cancel')}
           />
 
@@ -654,4 +723,18 @@ const styles = StyleSheet.create({
     fontFamily: 'Cairo-Regular',
     color: 'gray',
   },
+  textInput2: {
+    flex: 1,
+    borderRadius: 12,
+    fontFamily: 'Cairo-Regular',
+    backgroundColor:'#fff',
+  },
+  label3: {
+    textAlign: 'left',
+    fontSize: 16,
+    paddingHorizontal: 8,
+    fontFamily: 'Cairo-Regular',
+    color: 'gray',
+  },
+
 });

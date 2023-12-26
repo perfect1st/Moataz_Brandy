@@ -13,6 +13,7 @@ import {createStore, applyMiddleware} from 'redux';
 import {Provider} from 'react-redux';
 import ReduxThunk from 'redux-thunk';
 import Reducers from './src/redux/reducers';
+import { Linking } from 'react-native';
 
 import messaging from '@react-native-firebase/messaging';
 
@@ -59,25 +60,50 @@ const Mohassan = () => {
     return () => {};
   }, []);
 
+
   const requestUserPermission = async () => {
     const authorizationStatus = await messaging().requestPermission({
       provisional: true,
+      sound:true,
+      badge:false
     });
+    
+    console.log(messaging.AuthorizationStatus.AUTHORIZED)
+    console.log(messaging.AuthorizationStatus.PROVISIONAL)
+
     if (authorizationStatus) {
+      
       console.log('Permission settings:', authorizationStatus);
-      if (authorizationStatus === messaging.AuthorizationStatus.AUTHORIZED) {
-        getToken();
-        console.log('User has notification permissions enabled.');
-      } else if (
+  
+      if (
+        authorizationStatus === messaging.AuthorizationStatus.AUTHORIZED ||
         authorizationStatus === messaging.AuthorizationStatus.PROVISIONAL
       ) {
         getToken();
-        console.log('User has provisional notification permissions.');
+        console.log('User has notification permissions enabled.');
       } else {
         console.log('User has notification permissions disabled');
+        // Prompt the user to enable sound permissions
+        Alert.alert(
+          'Enable Sound Permissions',
+          'To receive sound notifications, please enable sound permissions for the app in your device settings.',
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+            {
+              text: 'Open Settings',
+              onPress: () => {
+                Linking.openSettings();
+              },
+            },
+          ]
+        );
       }
     }
   };
+  
 
   const getToken = async () => {
     let fcmToken = await AsyncStorage.getItem('fcmToken');

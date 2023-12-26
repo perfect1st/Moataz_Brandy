@@ -1,4 +1,4 @@
-package com.perfect.brandy;
+package com.perfect1st.brandysa;
 
 import com.facebook.react.ReactActivity;
 

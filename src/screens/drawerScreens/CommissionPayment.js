@@ -471,12 +471,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
     borderRadius: 12,
     justifyContent: 'center',
+    alignItems:'center'
   },
   paymentMethodImg: {
     height: '100%',
-    width: '80%',
-    alignSelf: 'center',
-    resizeMode: 'center',
+    width: '60%',
+    // alignSelf: 'stretch',
+    resizeMode:'stretch'
   },
   selectedPayment: {
     backgroundColor: '#1473E6',

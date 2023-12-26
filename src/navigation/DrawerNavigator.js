@@ -29,11 +29,13 @@ import { updateUser, uploadPhoto } from './../services/APIs';
 import Share from 'react-native-share';
 import files from '../file/fileBase64';
 import ModalAlert2 from '../components/ModalAlert/ModalAlert2';
+import RNFetchBlob from 'rn-fetch-blob';
 
 export default DrawerNavigator = ({ navigation }) => {
   const { t, i18n } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
   const [langVisible, setlanVisible] = useState(false);
+  const [img64, setimg64] = useState('');
 
 
   const User = useSelector(state => state.AuthReducer.User);
@@ -45,6 +47,28 @@ export default DrawerNavigator = ({ navigation }) => {
   const showAlert = () => {
     setlanVisible(!langVisible);
   };
+  useEffect(() => {
+      const fs = RNFetchBlob.fs;
+      let imagePath = null;
+      RNFetchBlob.config({
+        fileCache: true,
+      })
+        .fetch('GET', 'https://brandysa.com/BrandyAdmin/image/logoApp2.png')
+        // the image is now dowloaded to device's storage
+        .then(resp => {
+          // the image path you can use it directly with Image component
+          imagePath = resp.path();
+          return resp.readFile('base64');
+        })
+        .then(base64Data => {
+          // here's base64 encoded image
+          // console.log(base64Data,"hihihi");
+          // remove the file from storage
+          setimg64('data:image/png;base64,' + base64Data);
+          // console.log(img64);
+          return fs.unlink(imagePath);
+        });
+  }, []);
 
   const pickImageFromPhone = () => {
     const options = {
@@ -184,10 +208,12 @@ export default DrawerNavigator = ({ navigation }) => {
   };
 
   const share = async () => {
+    console.log(img64)
     const shareOptions = {
       message:
-        'تطبيق براندي \n رابط التطبيق علي جوجل بلاي : https://play.google.com/store/apps/details?id=com.perfect.brandy \n رابط التطبيق علي ابل ستور : https://apps.apple.com/eg/app/brandy-%D8%A8%D8%B1%D8%A7%D9%86%D8%AF%D9%89/id1576103766',
-      url: files.logo,
+      'https://brandysa.com \n' +
+        'تطبيق براندي \n رابط التطبيق علي جوجل بلاي : https://play.google.com/store/apps/details?id=com.perfect1st.brandysa \n رابط التطبيق علي ابل ستور : https://apps.apple.com/eg/app/brandy-%D8%A8%D8%B1%D8%A7%D9%86%D8%AF%D9%89/id1576103766',
+      // url: img64,
       // urls: [files.image1, files.image2]
     };
 
@@ -203,7 +229,8 @@ export default DrawerNavigator = ({ navigation }) => {
     try {
       const result = await Share.share({
         message:
-          'تطبيق براندي \n رابط التطبيق علي جوجل بلاي : https://play.google.com/store/apps/details?id=com.perfect.brandy \n رابط التطبيق علي ابل ستور : https://apps.apple.com/eg/app/brandy-%D8%A8%D8%B1%D8%A7%D9%86%D8%AF%D9%89/id1576103766',
+        'http://brandysa.com \n' +
+          'تطبيق براندي \n رابط التطبيق علي جوجل بلاي : https://play.google.com/store/apps/details?id=com.perfect1st.brandysa \n رابط التطبيق علي ابل ستور : https://apps.apple.com/eg/app/brandy-%D8%A8%D8%B1%D8%A7%D9%86%D8%AF%D9%89/id1576103766',
         url:
           'https://www.google.com/url?sa=i&url=https%3A%2F%2Fpixabay.com%2Fimages%2Fsearch%2Fsea%2F&psig=AOvVaw2CLYVhfLCAXqZ70b1ALwVM&ust=1627474085024000&source=images&cd=vfe&ved=0CAgQjRxqFwoTCPDpjMibg_ICFQAAAAAdAAAAABAO',
       });
@@ -373,7 +400,7 @@ export default DrawerNavigator = ({ navigation }) => {
           onPress={() => {
             if (Platform.OS == 'android') {
               Linking.openURL(
-                'https://play.google.com/store/apps/details?id=com.perfect.brandy',
+                'https://play.google.com/store/apps/details?id=com.perfect1st.brandysa',
               );
             } else {
               Linking.openURL(

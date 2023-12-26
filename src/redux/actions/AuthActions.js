@@ -23,6 +23,8 @@ export const logOut = () => {
 const requestUserPermission = async () => {
   const authorizationStatus = await messaging().requestPermission({
     provisional: true,
+    sound:false,
+    badge:false
   });
   if (authorizationStatus) {
     console.log('Permission settings:', authorizationStatus);

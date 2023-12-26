@@ -118,5 +118,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Brandy wants access to notifications  </string>
 </dict>
 </plist>

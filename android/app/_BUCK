@@ -35,12 +35,12 @@ android_library(
 
 android_build_config(
     name = "build_config",
-    package = "com.perfect.brandy",
+    package = "com.perfect1st.brandy",
 )
 
 android_resource(
     name = "res",
-    package = "com.perfect.brandy",
+    package = "com.perfect1st.brandy",
     res = "src/main/res",
 )
 

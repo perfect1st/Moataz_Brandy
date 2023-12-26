@@ -20,6 +20,8 @@ import {
 const {width, height} = Dimensions.get('window');
 import {Input} from 'native-base';
 import {useTranslation} from 'react-i18next';
+import { SaveUser,logOut } from '../../redux/actions';
+
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -28,6 +30,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {addContactUs,getSettings} from './../../services/APIs';
 import Textarea from 'react-native-textarea';
 import ModalAlert from '../../components/ModalAlert/ModalAlert';
+import axios from 'axios';
 
 const AddAdvData = ({navigation}) => {
   const {t, i18n} = useTranslation();
@@ -39,6 +42,8 @@ const AddAdvData = ({navigation}) => {
   const [successv, setsuccessv] = useState(false);
   const [wtsappNumber, setwtsappNumber] = useState('');
   const [email, setemail] = useState('');
+  const [userDeteled, setuserDeteled] = useState(false);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     getSettings(async respone =>{
@@ -53,17 +58,46 @@ const AddAdvData = ({navigation}) => {
 
   const contactUs = () => {
     if (User) {
-      if (!msg) {
-        seterrorv(!errorv);
-      } else {
-        setProcessing(true);
-        addContactUs(msg, User._id, async response => {
-          setProcessing(false);
-          // navigation.navigate('HomeStack');
-          setsuccessv(!successv)
-          setMsg('')
-        });
-      }
+
+      axios
+      .get('http://brandysa.com/api/user/employeeByID', {
+        params: {
+          id: User._id,
+        },
+      })
+      .then(response => {
+        console.log(response.data)
+        if(response.data.status == 1){
+          if (!msg) {
+            seterrorv(!errorv);
+          } else {
+            setProcessing(true);
+            addContactUs(msg, User._id, async response => {
+              setProcessing(false);
+              // navigation.navigate('HomeStack');
+              setsuccessv(!successv)
+              setMsg('')
+            });
+          }
+      
+        }else{
+          setuserDeteled(!userDeteled);
+          dispatch(logOut());
+          setTimeout(()=>{
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Home'}],
+            });
+            
+            navigation.navigate('Login');
+        },1500)
+        }
+      })
+  
+      
+ 
+
+
     } else {
       setloginv(!loginv);
     }
@@ -155,6 +189,15 @@ const AddAdvData = ({navigation}) => {
               seterrorv(!errorv);
             }}
             Mvasible={errorv}
+            CancleText={t('Cancel')}
+          />
+               <ModalAlert
+            Title={''}
+            TextBody={t('This user is blocked or deleted')}
+            onPress={() => {
+              setuserDeteled(!userDeteled);
+            }}
+            Mvasible={userDeteled}
             CancleText={t('Cancel')}
           />
           <ModalAlert
