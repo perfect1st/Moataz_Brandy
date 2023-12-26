@@ -7,6 +7,30 @@ import './../i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const {width, height} = Dimensions.get('window');
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const SplachScreen = ({navigation}) => {
   const User = useSelector(state => state.AuthReducer.User);
   const dispatch = useDispatch();
